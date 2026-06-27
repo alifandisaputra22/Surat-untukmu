@@ -68,7 +68,6 @@
   }
   .letter h2 { margin-top: 0; color: #4a69e2; }
   
-  /* Tombol musik kecil */
   #musicBtn {
     margin-top: 15px;
     background: #fff;
@@ -77,6 +76,7 @@
     border-radius: 20px;
     cursor: pointer;
     font-size: 13px;
+    font-family: 'Poppins', sans-serif;
   }
 
   .star {
@@ -112,13 +112,14 @@
     <p>Kamu udah hebat banget karena masih bertahan sampai sejauh ini. 
     Pelan-pelan aja, aku ada di sini.</p>
     <p>Istirahat ya kalau perlu. Kamu berharga, bahkan di hari-hari kamu ngerasa paling redup.</p>
+    <p style="text-align:center; font-size:13px; margin:10px 0;">🎵 Piano Cover "Daur Hidup"</p>
     <button id="musicBtn">🔈 Putar musik</button>
     <p style="text-align: right; margin-top: 20px;"><b>- Dari aku, untuk kamu</b></p>
   </div>
 </div>
 
-<audio id="bgMusic" loop>
-  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_d1718f7118.mp3" type="audio/mpeg">
+<audio id="bgMusic" loop preload="auto">
+  <source src="https://cdn.pixabay.com/audio/2024/08/02/audio_7c6e0a1f9e.mp3" type="audio/mpeg">
 </audio>
 
 <script>
@@ -132,8 +133,8 @@
     setTimeout(() => {
       letter.classList.add('show');
       letter.scrollIntoView({ behavior: 'smooth' });
-      music.volume = 0.3; // volumenya kecil biar gak kaget
-      music.play().catch(()=>{}); // auto play pas dibuka
+      music.volume = 0.25; 
+      music.play().catch(()=>{});
     }, 800);
   });
 
