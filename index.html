@@ -13,14 +13,13 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: flex-start; /* diubah biar bisa scroll dari atas */
+    align-items: flex-start;
     color: #333;
-    overflow-y: auto; /* INI YG DIPERBAIKI: Biar bisa scroll vertikal */
-    padding: 40px 0; /* kasih jarak atas bawah biar gak mepet */
+    overflow-y: auto;
+    padding: 40px 0;
   }
   .container { text-align: center; z-index: 2; padding: 20px; max-width: 400px; }
 
-  /* Amplop */
   .envelope {
     width: 220px; height: 150px;
     background: #fff;
@@ -50,7 +49,6 @@
     font-size: 30px;
   }
 
-  /* Isi Surat */
   .letter {
     background: #fff;
     padding: 25px;
@@ -69,8 +67,18 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .letter h2 { margin-top: 0; color: #4a69e2; }
+  
+  /* Tombol musik kecil */
+  #musicBtn {
+    margin-top: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+  }
 
-  /* Bintang jatuh pelan */
   .star {
     position: absolute;
     width: 3px; height: 3px;
@@ -78,7 +86,7 @@
     border-radius: 50%;
     opacity: 0.8;
     animation: fall linear infinite;
-    z-index: 1; /* biar di belakang konten */
+    z-index: 1;
   }
   @keyframes fall {
     0% { transform: translateY(-10vh); opacity: 1; }
@@ -103,24 +111,42 @@
     gak selalu harus kuat dan ceria terus.</p>
     <p>Kamu udah hebat banget karena masih bertahan sampai sejauh ini. 
     Pelan-pelan aja, aku ada di sini.</p>
-    <p>Istirahat ya kalau perlu. Kamu berharga, bahkan di hari-hari kamu ngerasa paling redup.</p
+    <p>Istirahat ya kalau perlu. Kamu berharga, bahkan di hari-hari kamu ngerasa paling redup.</p>
+    <button id="musicBtn">🔈 Putar musik</button>
     <p style="text-align: right; margin-top: 20px;"><b>- Dari aku, untuk kamu</b></p>
   </div>
 </div>
 
+<audio id="bgMusic" loop>
+  <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_d1718f7118.mp3" type="audio/mpeg">
+</audio>
+
 <script>
   const envelope = document.getElementById('envelope');
   const letter = document.getElementById('letter');
+  const music = document.getElementById('bgMusic');
+  const musicBtn = document.getElementById('musicBtn');
 
   envelope.addEventListener('click', () => {
     envelope.classList.add('open');
     setTimeout(() => {
       letter.classList.add('show');
-      letter.scrollIntoView({ behavior: 'smooth' }); // Auto scroll ke surat pas dibuka
+      letter.scrollIntoView({ behavior: 'smooth' });
+      music.volume = 0.3; // volumenya kecil biar gak kaget
+      music.play().catch(()=>{}); // auto play pas dibuka
     }, 800);
   });
 
-  // Bikin bintang jatuh random
+  musicBtn.addEventListener('click', () => {
+    if (music.paused) {
+      music.play();
+      musicBtn.textContent = '🔇 Pause musik';
+    } else {
+      music.pause();
+      musicBtn.textContent = '🔈 Putar musik';
+    }
+  });
+
   function createStar() {
     const star = document.createElement('div');
     star.className = 'star';
