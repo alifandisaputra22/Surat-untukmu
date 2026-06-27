@@ -13,11 +13,12 @@
     min-height: 100vh;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start; /* diubah biar bisa scroll dari atas */
     color: #333;
-    overflow: hidden;
+    overflow-y: auto; /* INI YG DIPERBAIKI: Biar bisa scroll vertikal */
+    padding: 40px 0; /* kasih jarak atas bawah biar gak mepet */
   }
-  .container { text-align: center; z-index: 2; padding: 20px; }
+  .container { text-align: center; z-index: 2; padding: 20px; max-width: 400px; }
 
   /* Amplop */
   .envelope {
@@ -77,6 +78,7 @@
     border-radius: 50%;
     opacity: 0.8;
     animation: fall linear infinite;
+    z-index: 1; /* biar di belakang konten */
   }
   @keyframes fall {
     0% { transform: translateY(-10vh); opacity: 1; }
@@ -102,6 +104,7 @@
     <p>Kamu udah hebat banget karena masih bertahan sampai sejauh ini. 
     Pelan-pelan aja, aku ada di sini.</p>
     <p>Istirahat ya kalau perlu. Kamu berharga, bahkan di hari-hari kamu ngerasa paling redup.</p>
+    <p>Tambahin teks sepanjang apapun di sini...<br>Suratnya bakal bisa di-scroll ke bawah tanpa kepotong.</p>
     <p style="text-align: right; margin-top: 20px;"><b>- Dari aku, untuk kamu</b></p>
   </div>
 </div>
@@ -114,6 +117,7 @@
     envelope.classList.add('open');
     setTimeout(() => {
       letter.classList.add('show');
+      letter.scrollIntoView({ behavior: 'smooth' }); // Auto scroll ke surat pas dibuka
     }, 800);
   });
 
