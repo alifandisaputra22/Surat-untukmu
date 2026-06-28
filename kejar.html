@@ -5,62 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Kejar Aku 💙</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
   body {
     margin: 0;
-    background: linear-gradient(180deg, #1a1a2e, #16213e, #0f3460);
-    font-family: 'Poppins', sans-serif;
+    background: #87ceeb; /* Langit biru ala mario */
+    font-family: 'Press Start 2P', cursive;
     overflow: hidden;
     height: 100vh;
     color: #fff;
+    image-rendering: pixelated;
     touch-action: none;
   }
-  canvas { display: block; }
+  canvas { display: block; background: linear-gradient(#87ceeb 70%, #34a034 70%); }
   #overlay {
     position: absolute; inset: 0; background: rgba(0,0,0,0.9);
-    backdrop-filter: blur(5px); display: flex; flex-direction: column;
+    display: flex; flex-direction: column;
     justify-content: center; align-items: center; text-align: center;
-    padding: 30px; opacity: 0; pointer-events: none; transition: opacity.6s ease; z-index: 10;
+    padding: 20px; opacity: 0; pointer-events: none; transition: opacity.6s ease; z-index: 10;
   }
   #overlay.show { opacity: 1; pointer-events: all; }
-  #overlay h1 { font-size: 26px; margin-bottom: 15px; color: #ff7eb3; }
-  #overlay p { font-size: 15px; line-height: 1.8; max-width: 320px; font-weight: 600; }
-  #overlay button { margin-top: 20px; background: #ff7eb3; color: #1a1a2e; border: none; padding: 12px 24px; border-radius: 30px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Poppins', sans-serif; }
+  #overlay h1 { font-size: 14px; margin-bottom: 20px; color: #ffde00; line-height: 1.8; }
+  #overlay p { font-size: 9px; line-height: 2.2; max-width: 320px; }
+  #overlay button { margin-top: 20px; background: #ffde00; color: #000; border: none; padding: 12px 20px; border-radius: 0; font-size: 9px; font-weight: 700; cursor: pointer; font-family: 'Press Start 2P', cursive; }
   #startText {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    text-align: center; color: #eee; font-size: 18px; font-weight: 700;
-    z-index: 5; background: rgba(0,0,0,0.5); padding: 20px 30px; border-radius: 20px;
+    text-align: center; color: #000; font-size: 12px; line-height: 2;
+    z-index: 5; background: rgba(255,255,255,0.8); padding: 20px; border: 4px solid #000;
   }
   #joystick-base {
-    position: absolute; bottom: 40px; left: 40px; width: 120px; height: 120px;
-    background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2);
-    border-radius: 50%; z-index: 5; display: none; /* Sembunyiin dulu */
+    position: absolute; bottom: 40px; left: 40px; width: 100px; height: 100px;
+    background: rgba(0,0,0,0.2); border: 3px solid #000;
+    border-radius: 50%; z-index: 5; display: none;
   }
   #joystick-knob {
-    position: absolute; width: 50px; height: 50px; background: #ff7eb3;
-    border-radius: 50%; box-shadow: 0 0 15px #ff7eb3;
+    position: absolute; width: 40px; height: 40px; background: #000;
+    border-radius: 50%;
     top: 50%; left: 50%; transform: translate(-50%, -50%);
   }
 </style>
 </head>
 <body>
-  <div id="startText">Tap Layar Untuk Mulai 🔊</div>
+  <div id="startText">TAP UNTUK MULAI<br>PAKE JOYSTICK<br>KEJAR DIA!</div>
   <canvas id="game"></canvas>
   <div id="joystick-base"><div id="joystick-knob"></div></div>
 
   <div id="overlay">
-    <h1>Kamu Berhasil Nangkep Aku 💙</h1>
+    <h1>SELAMAT! KAMU MENANG</h1>
     <p>
-      Kamu baru aja ngejar sesuatu tanpa nyerah. Keren. <br><br>
+      Kamu baru aja ngejar tanpa nyerah. Keren.<br><br>
       Sama kayak aku ngejar kamu.
       Kadang aku jauh, kadang aku ngilang.
-      Tapi kamu gak pernah berhenti. <br><br>
-      Karena kamu tau, di ujung kejar-kejaran ini ada aku.
-      Dan aku worth it buat diperjuangin.
+      Tapi kamu gak pernah berhenti.<br><br>
+      Karena di ujung ini ada aku.
+      Dan aku worth it diperjuangin.
       <br><br>
-      Jangan berhenti ya. Sama aku.
+      JANGAN BERHENTI YA. SAMA AKU.
     </p>
-    <button onclick="location.reload()">Mau Ngejar Lagi?</button>
+    <button onclick="location.reload()">MAIN LAGI</button>
   </div>
 
 <script>
@@ -72,157 +73,155 @@ const joystick = document.getElementById('joystick-base');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// ===== AUDIO SYSTEM =====
-let audioCtx;
+// ===== AUDIO 8-BIT ALA MARIO =====
+let audioCtx, musicInterval;
 function initAudio() {
   audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  playMusic(); // Langsung putar musik loop
 }
-function playSound(type) {
-  if (!audioCtx) return;
+function playNote(freq, time) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-
-  if (type === 'move') { // Suara gerak
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(200, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
-  }
-  if (type === 'run') { // Suara cewek lari
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-  }
-  if (type === 'win') { // Suara menang
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
-    osc.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
-  }
+  osc.type = 'square'; // Suara 8-bit
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+  osc.connect(gain).connect(audioCtx.destination);
   osc.start();
-  osc.stop(audioCtx.currentTime + 0.3);
+  osc.stop(audioCtx.currentTime + time);
+}
+function playMusic() {
+  const melody = [523, 523, 0, 523, 0, 392, 0, 523, 0, 0, 659, 0, 659, 0, 659, 0, 698, 698, 0, 698, 0, 659, 0, 523, 0, 0, 392, 392, 0, 523, 0, 0]; // Mirip tema mario, tapi original
+  let i = 0;
+  musicInterval = setInterval(() => {
+    if(melody[i] > 0) playNote(melody[i], 0.15);
+    i = (i+1) % melody.length;
+  }, 200);
+}
+function playSFX(type) {
+  if (!audioCtx) return;
+  if(type === 'win') { playNote(880, 0.1); setTimeout(()=>playNote(1046,0.2),100); }
+  if(type === 'run') { playNote(300, 0.05); }
 }
 // ===== END AUDIO =====
 
-let player = { x: canvas.width/2, y: canvas.height-100, r: 18, color: '#7ec8ff', vx: 0, vy: 0, speed: 4 };
-let target = { x: canvas.width/2, y: 100, r: 18, color: '#ff7eb3', vx: 2.5, vy: 2 };
-let gameOver = false;
-let gameStarted = false;
-let lastMoveSound = 0;
+let player = { x: 50, y: canvas.height-100, w: 32, h: 32, vx: 0, vy: 0, speed: 3.5, dir: 1 };
+let target = { x: canvas.width-100, y: canvas.height-100, w: 32, h: 32, vx: 2, vy: 0, dir: -1 };
+let gameOver = false, gameStarted = false, runSoundCooldown = 0;
 
 const base = document.getElementById('joystick-base');
 const knob = document.getElementById('joystick-knob');
-let joystickActive = false;
 let joystickX = 0, joystickY = 0;
 
 function startGame() {
-  initAudio(); // Nyalain suara pas pertama tap
+  initAudio();
   startText.style.display = 'none';
-  joystick.style.display = 'block'; // Munculin joystick
+  joystick.style.display = 'block';
   gameStarted = true;
 }
 document.body.addEventListener('touchstart', startGame, { once: true });
 
 base.addEventListener('touchmove', e => {
-  if(!joystickActive) joystickActive = true;
   let touch = e.touches[0];
   let rect = base.getBoundingClientRect();
   let centerX = rect.left + rect.width/2;
   let centerY = rect.top + rect.height/2;
   let dx = touch.clientX - centerX;
   let dy = touch.clientY - centerY;
-  let dist = Math.min(Math.sqrt(dx*dx+dy*dy), 60);
+  let dist = Math.min(Math.sqrt(dx*dx+dy*dy), 50);
   let angle = Math.atan2(dy, dx);
-  joystickX = Math.cos(angle) * dist / 60;
-  joystickY = Math.sin(angle) * dist / 60;
-  knob.style.transform = `translate(calc(-50% + ${joystickX*35}px), calc(-50% + ${joystickY*35}px))`;
-
-  // Mainin suara gerak, tapi jangan spam
-  if (Date.now() - lastMoveSound > 200 && (joystickX!== 0 || joystickY!== 0)) {
-    playSound('move');
-    lastMoveSound = Date.now();
-  }
+  joystickX = Math.cos(angle) * dist / 50;
+  joystickY = Math.sin(angle) * dist / 50;
+  knob.style.transform = `translate(calc(-50% + ${joystickX*30}px), calc(-50% + ${joystickY*30}px))`;
 });
 base.addEventListener('touchend', () => {
-  joystickActive = false;
   joystickX = 0; joystickY = 0;
   knob.style.transform = `translate(-50%, -50%)`;
 });
 
-function drawChar(obj, isGirl=false) {
-  ctx.beginPath();
-  ctx.arc(obj.x, obj.y, obj.r, 0, Math.PI * 2);
-  ctx.fillStyle = obj.color;
-  ctx.shadowColor = obj.color;
-  ctx.shadowBlur = 20;
-  ctx.fill();
-  ctx.shadowBlur = 0;
-  if(isGirl){
-    ctx.beginPath();
-    ctx.arc(obj.x, obj.y-5, obj.r*0.8, Math.PI, 0);
-    ctx.fillStyle = obj.color;
-    ctx.fill();
+// Gambar Sprite Pixel Sederhana
+function drawSprite(x, y, isGirl, dir) {
+  ctx.save();
+  if(dir === -1) { ctx.scale(-1, 1); x = -x - 32; } // Balik badan kalo ke kiri
+
+  // Badan
+  ctx.fillStyle = isGirl? '#ff7eb3' : '#3b82f6';
+  ctx.fillRect(x+8, y+12, 16, 12);
+  // Kepala
+  ctx.fillStyle = '#fde4cf';
+  ctx.fillRect(x+10, y+4, 12, 8);
+  // Rambut Cewek
+  if(isGirl) {
+    ctx.fillStyle = '#4a2c2a';
+    ctx.fillRect(x+8, y+2, 16, 6);
+    ctx.fillRect(x+8, y+4, 4, 8); // Poni
+  } else { // Rambut Cowok
+    ctx.fillStyle = '#3b2f2f';
+    ctx.fillRect(x+10, y+2, 12, 4);
   }
+  // Kaki
+  ctx.fillStyle = '#000';
+  ctx.fillRect(x+10, y+24, 4, 8);
+  ctx.fillRect(x+18, y+24, 4, 8);
+  ctx.restore();
 }
 
 function moveTarget() {
+  // AI: Lari kalo dideketin, tapi gabisa keluar layar
   let dx = player.x - target.x;
-  let dy = player.y - target.y;
-  let dist = Math.sqrt(dx*dx + dy*dy);
-  if(dist < 150){
-    target.x -= dx/dist * 2.5;
-    target.y -= dy/dist * 2.5;
-    playSound('run'); // Bunyiin pas lari
+  let dist = Math.abs(dx);
+  if(dist < 120){
+    target.vx = dx > 0? -2.2 : 2.2; // Lari menjauh
+    target.dir = dx > 0? -1 : 1;
+    if(Date.now() - runSoundCooldown > 300) { playSFX('run'); runSoundCooldown = Date.now(); }
   } else {
-    target.x += target.vx;
-    target.y += target.vy;
+    target.vx = target.dir * 1.2; // Jalan santai
   }
-  if (target.x + target.r > canvas.width || target.x - target.r < 0) target.vx *= -1;
-  if (target.y + target.r > canvas.height || target.y - target.r < 0) target.vy *= -1;
+
+  target.x += target.vx;
+  // Kunci biar gak keluar layar
+  if (target.x <= 0) { target.x = 0; target.dir = 1; }
+  if (target.x + target.w >= canvas.width) { target.x = canvas.width - target.w; target.dir = -1; }
 }
 
 function updatePlayer() {
   player.vx = joystickX * player.speed;
-  player.vy = joystickY * player.speed;
   player.x += player.vx;
-  player.y += player.vy;
-  player.x = Math.max(player.r, Math.min(canvas.width - player.r, player.x));
-  player.y = Math.max(player.r, Math.min(canvas.height - player.r, player.y));
+  if(player.vx > 0) player.dir = 1;
+  if(player.vx < 0) player.dir = -1;
+  // Kunci biar gak keluar layar
+  player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
 }
 
 function checkCollision() {
-  let dx = player.x - target.x;
-  let dy = player.y - target.y;
-  let dist = Math.sqrt(dx * dx + dy * dy);
-  if (dist < player.r + target.r) {
+  if (player.x < target.x + target.w &&
+      player.x + player.w > target.x &&
+      player.y < target.y + target.h &&
+      player.y + player.h > target.y) {
     gameOver = true;
-    playSound('win'); // Suara menang pas ketangkep
+    clearInterval(musicInterval); // Stop musik
+    playSFX('win');
     setTimeout(() => overlay.classList.add('show'), 400);
   }
 }
 
-function drawStars() {
-  for (let i = 0; i < 80; i++) {
-    ctx.beginPath();
-    ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*1.5, 0, Math.PI*2);
-    ctx.fillStyle = 'rgba(255,255,255,'+Math.random()*0.7+')';
-    ctx.fill();
+function drawGround() {
+  ctx.fillStyle = '#8b4513';
+  for(let i=0; i<canvas.width; i+=32){
+    ctx.fillRect(i, canvas.height-32, 32, 32);
   }
 }
 
 function gameLoop() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  drawStars();
+  drawGround();
   if (!gameOver && gameStarted) {
     updatePlayer();
     moveTarget();
     checkCollision();
   }
-  drawChar(target, true);
-  drawChar(player, false);
+  drawSprite(target.x, target.y, true, target.dir); // Cewek
+  drawSprite(player.x, player.y, false, player.dir); // Cowok
   requestAnimationFrame(gameLoop);
 }
 gameLoop();
