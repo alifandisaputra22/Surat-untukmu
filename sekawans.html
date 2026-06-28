@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Untuk Kita - Film Anime 3D</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;700&display=swap');
+  body { margin:0; overflow:hidden; background:#000; font-family:'Poppins', sans-serif; }
+  #scene { position:absolute; bottom:8%; left:50%; transform:translateX(-50%); width:90%; max-width:600px; text-align:center; background:rgba(0,0,0,0.7); backdrop-filter:blur(10px); padding:18px; border-radius:12px; z-index:2; opacity:0; transition:opacity 2s ease-in-out; border:1px solid rgba(167,139,250,0.3); }
+  #scene.show { opacity:1; }
+  h1 { font-size:20px; margin:0 0 6px 0; color:#fff; }
+  p { font-size:14px; line-height:1.7; font-weight:300; margin:0; color:#ddd; }
+  #pesan { font-size:15px; font-style:italic; color:#a78bfa; text-align:left; }
+  #progress { position:absolute; bottom:0; left:0; height:3px; background:#a78bfa; z-index:3; width:0%; }
+  #startHint { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:10; background:#000; padding:20px; border-radius:12px; border:1px solid #a78bfa; color:#fff; font-weight:700; }
+  #musicBtn { position:absolute; top:15px; right:15px; z-index:5; background:rgba(255,255,255,0.1); border:1px solid #fff; color:#fff; width:40px; height:40px; border-radius:50%; }
+</style>
+<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+</head>
+<body>
+<div id="startHint">Tap Untuk Putar Film ✨</div>
+<div id="scene"><div id="text"></div></div>
+<button id="musicBtn" onclick="toggleMusic()">🔊</button>
+<div id="progress"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const scenes=[
+ {t:"Bab 1: Kita Berempat",p:"Dulu, semuanya berawal dari kita berempat.",anim:"4_idle", dur:8},
+ {t:"Bab 2: Makin Rame",p:"Satu-satu orang baru datang. Lingkaran kita makin besar.",anim:"12_dance", dur:10},
+ {t:"Bab 3: Suka & Duka",p:"Kita jatuh bareng, bangkit bareng. Ada hujan, ada tawa.",anim:"8_sad", dur:12},
+ {t:"Bab 4: Berpencar",p:"Sampai akhirnya... kita harus jalan masing-masing.",anim:"12_walk", dur:10},
+ {t:"Bab Terakhir: Untuk Kalian",p:`<div id="pesan">"Hai kalian... Mungkin sekarang kita udah gak serame dulu.<br><br>Tapi aku harap kalian gak pernah lupa. Masa dimana kita selalu jadi tempat pulang.<br><br>Semangat terus ya. Buat mimpi, buat cinta. Aku bangga sama kita.<br><br>- Dari kamar kos, jam 1 pagi."</div>`,anim:"1_sit", dur:20}
+];
+let i=0, timer, mixer, baseModel, clones=[];
+const sceneEl=document.getElementById('scene'),textEl=document.getElementById('text'),startHint=document.getElementById('startHint'),progressEl=document.getElementById('progress');
+
+function playScene(){
+ sceneEl.classList.remove('show');
+ setTimeout(()=>{
+  textEl.innerHTML=`<h1>${scenes[i].t}</h1><p>${scenes[i].p}</p>`;
+  sceneEl.classList.add('show');
+  setAnim(scenes[i].anim);
+  let start=Date.now();
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    let p=(Date.now()-start)/(scenes[i].dur*1000)*100;
+    progressEl.style.width=p+'%';
+    if(p>=100){clearInterval(timer);nextScene();}
+  },100);
+ },1000);
+}
+function nextScene(){if(i<scenes.length-1){i++;playScene();}else{progressEl.style.width='100%';}}
+document.body.addEventListener('click',()=>{if(startHint.style.display!=='none'){initMusic();music=1;startHint.style.display='none';playScene();}}, {once:1});
+
+// ===== 3D ANIME CLONE =====
+const W=innerWidth,H=innerHeight;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x0a0a1a);scene.fog=new THREE.Fog(0x0a0a1a,10,25);
+const camera=new THREE.PerspectiveCamera(45,W/H,0.1,1000);camera.position.set(0,2,8);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setSize(W,H);document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff,0.8));
+const light=new THREE.DirectionalLight(0xffffff,1);light.position.set(2,5,3);scene.add(light);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshStandardMaterial({color:0x111}));floor.rotation.x=-Math.PI/2;scene.add(floor);
+
+const clock=new THREE.Clock();
+const loader=new GLTFLoader();
+const MODEL_URL='https://threejs.org/examples/models/gltf/Soldier.glb'; // Model anime cowok 2.1MB
+
+loader.load(MODEL_URL, (gltf)=>{
+  baseModel=gltf.scene;
+  mixer=new THREE.AnimationMixer(baseModel);
+  const actions={};
+  gltf.animations.forEach((clip)=>{actions[clip.name]=mixer.clipAction(clip);});
+  // Simpan actions buat di-clone nanti
+  window.animeActions=actions;
+}, undefined, e=>{console.error('Gagal load model:', e);});
+
+function clearClones(){clones.forEach(c=>scene.remove(c));clones=[];}
+function makeClone(x,z,animName){
+  const c=baseModel.clone();
+  c.position.set(x,0,z);
+  c.scale.set(0.9,0.9,0.9);
+  scene.add(c);
+  const m=new THREE.AnimationMixer(c);
+  if(window.animeActions[animName])m.clipAction(window.animeActions[animName]).play();
+  clones.push({mesh:c,mixer:m});
+}
+
+function setAnim(type){
+  clearClones();
+  const [num, anim]=type.split('_');
+  const n=parseInt(num);
+  if(type==="4_idle"){for(let j=0;j<4;j++)makeClone(j*2-3,0,'Idle');}
+  if(type==="12_dance"){for(let j=0;j<12;j++)makeClone((Math.random()-0.5)*10, (Math.random()-0.5)*4,'Dance');}
+  if(type==="8_sad"){for(let j=0;j<8;j++)makeClone(j*2-7,0,'Idle');} // Idle = nunduk = sedih
+  if(type==="12_walk"){for(let j=0;j<12;j++)makeClone(0,0,'Walking');} // Semua jalan
+  if(type==="1_sit"){makeClone(0,0,'Sitting');} // Tinggal 1
+}
+
+function animate(){
+ requestAnimationFrame(animate);
+ const delta=clock.getDelta();
+ clones.forEach(c=>{
+  c.mixer.update(delta);
+  if(scenes[i]&&scenes[i].anim==="12_walk")c.mesh.position.x-=0.01; // Jalan ke kiri = pergi
+  if(scenes[i]&&scenes[i].anim==="1_sit")c.mesh.position.y=0.5; // Duduk
+ });
+ camera.lookAt(0,1,0);
+ renderer.render(scene,camera);
+}
+animate();
+
+// Musik
+let ac,music=0,intv;
+function initMusic(){ac=new(window.AudioContext||window.webkitAudioContext)();const m=[392,440,494,523,494,440,392,349];let k=0;intv=setInterval(()=>{if(music){const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=m[k];g.gain.setValueAtTime(0.02,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+0.5);o.connect(g).connect(ac.destination);o.start();o.stop(ac.currentTime+0.5);k=(k+1)%m.length;}},600);}
+window.toggleMusic=()=>{if(!ac)initMusic();music=!music;document.getElementById('musicBtn').innerText=music?'🔊':'🔇';};
+</script>
+</body>
+</html>
