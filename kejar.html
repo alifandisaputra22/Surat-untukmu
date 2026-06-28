@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Game Untuk Kamu 💙</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap');
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #0f2027, #203a43, #2c5364);
+    font-family: 'Poppins', sans-serif;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    color: #fff;
+  }
+  canvas {
+    background: rgba(0,0,0,0.2);
+    border-radius: 20px;
+    box-shadow: 0 0 30px rgba(100,150,255,0.3);
+    touch-action: none;
+  }
+  #overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 30px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity.6s ease;
+    z-index: 10;
+  }
+  #overlay.show {
+    opacity: 1;
+    pointer-events: all;
+  }
+  #overlay h1 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: #a1c4fd;
+  }
+  #overlay p {
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 320px;
+  }
+  #overlay button {
+    margin-top: 20px;
+    background: #a1c4fd;
+    color: #0f2027;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+  }
+  #startText {
+    position: absolute;
+    color: #fff;
+    font-size: 14px;
+    text-align: center;
+    z-index: 5;
+  }
+</style>
+</head>
+<body>
+  <div id="startText">Sentuh & geser layar untuk menggerakkan 💙<br>Kejar ✨ itu sampai kamu dapatkan</div>
+  <canvas id="game" width="360" height="640"></canvas>
+
+  <div id="overlay">
+    <h1>Selamat, Kamu Berhasil 💙</h1>
+    <p>
+      Kamu baru aja ngejar sesuatu tanpa nyerah. Keren. <br><br>
+      Sama kayak aku ngejar kamu.
+      Kadang kamu jauh, kadang kamu ngilang.
+      Tapi aku gak pernah berhenti. <br><br>
+      Karena aku tau, di ujung kejar-kejaran ini ada kamu.
+      Dan kamu worth it buat diperjuangin.
+      <br><br>
+      Jangan berhenti ya. Sama aku.
+    </p>
+    <button onclick="location.reload()">Main Lagi</button>
+  </div>
+
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const startText = document.getElementById('startText');
+
+let player = { x: 180, y: 580, r: 15, color: '#a1c4fd' };
+let target = { x: 180, y: 80, r: 15, color: '#ffd700', vx: 2, vy: 1.5 };
+let gameOver = false;
+let gameStarted = false;
+
+function drawCircle(obj) {
+  ctx.beginPath();
+  ctx.arc(obj.x, obj.y, obj.r, 0, Math.PI * 2);
+  ctx.fillStyle = obj.color;
+  ctx.shadowColor = obj.color;
+  ctx.shadowBlur = 15;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function moveTarget() {
+  target.x += target.vx;
+  target.y += target.vy;
+  if (target.x + target.r > canvas.width || target.x - target.r < 0) target.vx *= -1;
+  if (target.y + target.r > canvas.height || target.y - target.r < 0) target.vy *= -1;
+}
+
+function checkCollision() {
+  let dx = player.x - target.x;
+  let dy = player.y - target.y;
+  let dist = Math.sqrt(dx * dx + dy * dy);
+  if (dist < player.r + target.r) {
+    gameOver = true;
+    setTimeout(() => overlay.classList.add('show'), 300);
+  }
+}
+
+function drawStars() {
+  for (let i = 0; i < 50; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, Math.random()*1.5, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(255,255,255,'+Math.random()+')';
+    ctx.fill();
+  }
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawStars();
+  if (!gameOver) {
+    moveTarget();
+    checkCollision();
+  }
+  drawCircle(target);
+  drawCircle(player);
+  requestAnimationFrame(gameLoop);
+}
+
+// Kontrol HP: sentuh & geser
+canvas.addEventListener('touchmove', (e) => {
+  e.preventDefault();
+  if (!gameStarted) {
+    startText.style.display = 'none';
+    gameStarted = true;
+  }
+  let touch = e.touches[0];
+  let rect = canvas.getBoundingClientRect();
+  player.x = touch.clientX - rect.left;
+  player.y = touch.clientY - rect.top;
+}, { passive: false });
+
+// Kontrol PC: mouse
+canvas.addEventListener('mousemove', (e) => {
+  if (!gameStarted) {
+    startText.style.display = 'none';
+    gameStarted = true;
+  }
+  let rect = canvas.getBoundingClientRect();
+  player.x = e.clientX - rect.left;
+  player.y = e.clientY - rect.top;
+});
+
+gameLoop();
+</script>
+</body>
+  </html>
