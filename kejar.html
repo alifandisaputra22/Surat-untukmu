@@ -46,7 +46,7 @@ canvas.width=window.innerWidth; canvas.height=window.innerHeight;
 const GROUND=canvas.height-50, SPEED=6, GRAV=0.6;
 
 let audioCtx;
-function sfx(t){ // Suara 8-bit kayak Dino Chrome
+function sfx(t){
   if(!audioCtx)return;
   const o=audioCtx.createOscillator(),g=audioCtx.createGain();
   g.gain.setValueAtTime(0.1,audioCtx.currentTime);
@@ -54,21 +54,23 @@ function sfx(t){ // Suara 8-bit kayak Dino Chrome
   o.connect(g).connect(audioCtx.destination);
   o.start();o.stop(audioCtx.currentTime+0.1);
   
-  if(t==='jump')o.frequency.value=600; // Ting pas loncat
-  if(t==='hit')o.frequency.value=200; // Dug pas nabrak
-  if(t==='win'){ // Ding pas menang
+  if(t==='jump')o.frequency.value=600;
+  if(t==='hit')o.frequency.value=200;
+  if(t==='win'){
     o.frequency.value=800;
     setTimeout(()=>{const o2=audioCtx.createOscillator(),g2=audioCtx.createGain();g2.gain.setValueAtTime(0.1,audioCtx.currentTime);g2.exponentialRampToValueAtTime(0.01,audioCtx.currentTime+0.2);o2.connect(g2).connect(audioCtx.destination);o2.frequency.value=1000;o2.start();o2.stop(audioCtx.currentTime+0.2);},120);
   }
 }
 
 let player={x:80,y:GROUND-40,w:30,h:40,vy:0,onG:1};
-let target={x:300,y:GROUND-35,w:28,h:35,vx:SPEED-1.5}; // Dino cewek
+let target={x:300,y:GROUND-35,w:28,h:35,vx:SPEED-1.5};
 let obstacles=[],clouds=[],dist=0,gameStart=0,win=0,spawnTimer=0;
 let jumpBtn=document.getElementById('jumpBtn');
 
 function jump(){
   if(player.onG && !win){player.vy=-12;player.onG=0;sfx('jump');}
+} // <- INI TADI YANG KURANG }
+
 jumpBtn.style.display='flex';
 jumpBtn.addEventListener('touchstart',e=>{e.preventDefault();jump();});
 document.addEventListener('keydown',e=>{if(e.code==='Space')jump();});
@@ -103,7 +105,7 @@ function update(){
 
   for(let o of obstacles){
     if(player.x<o.x+o.w && player.x+player.w>o.x && player.y<o.y+o.h && player.y+player.h>o.y){
-      sfx('hit'); // SUARA NABRAK
+      sfx('hit');
       player.x=80;player.y=GROUND-40;dist=0;obstacles=[];
     }
   }
@@ -144,4 +146,4 @@ function loop(){update();draw();requestAnimationFrame(loop);}
 loop();
 </script>
 </body>
-</html>
+      </html>
